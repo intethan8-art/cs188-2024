@@ -28,3 +28,9 @@ Project 1 : Search
     kruskal: 关注edge ，将边按weight从小到大排序，总是连weight最小的边除非形成了环。   
              假设连的是v-->w,所有与v相连的构成一个set，由于不构成环，故v与w本来在不同set，v-->w就是weight最小的cutting edge
              用一个PQ, 用一个WQU (weighted quick union) disjoint
+
+    q7
+    延续q6 选离得最近的k个有food的node做MST，同时为了避免MST紧密但实际上到最近的node可能很远的情况，补上nearest correction
+
+    q8
+    greedy 吃离自己最近的 利用继承使代码简洁
