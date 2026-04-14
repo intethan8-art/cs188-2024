@@ -496,8 +496,46 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    from util import manhattanDistance
+    foodList = foodGrid.asList()
 
+    if not foodList:
+        return 0
+
+    k = 5  
+    foodList = sorted(foodList, key=lambda f: manhattanDistance(position, f))
+    selected = foodList[:k]
+
+    # ---- Step 2: MST on selected nodes ----
+    if len(selected) == 1:
+        return manhattanDistance(position, selected[0])
+
+    unvisited = set(selected)
+    current = unvisited.pop()
+
+    mst_cost = 0
+    visited = {current}
+
+    import math
+
+    while unvisited:
+        best_cost = math.inf
+        best_node = None
+
+        for v in visited:
+            for u in unvisited:
+                dist = manhattanDistance(v, u)
+                if dist < best_cost:
+                    best_cost = dist
+                    best_node = u
+
+        visited.add(best_node)
+        unvisited.remove(best_node)
+        mst_cost += best_cost
+
+    nearest = min(manhattanDistance(position, f) for f in selected)
+
+    return mst_cost + nearest
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -528,7 +566,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.uniformCostSearch(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -564,7 +602,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.food[x][y]
 
 def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pacman.GameState) -> int:
     """
