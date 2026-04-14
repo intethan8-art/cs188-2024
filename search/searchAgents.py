@@ -296,14 +296,15 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return (self.startingPosition, ())
 
     def isGoalState(self, state: Any):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        position, visited_corners = state
+        return len(visited_corners) == len(self.corners)
 
     def getSuccessors(self, state: Any):
         """
@@ -326,6 +327,17 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            curpos, visited_corners = state
+            x,y = curpos
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall :
+                nextpos = (nextx, nexty)
+                new_visited = visited_corners
+                if nextpos in self.corners and nextpos not in visited_corners:
+                    new_visited =  visited_corners + (nextpos,)
+                successors.append(((nextpos, new_visited), action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -362,8 +374,39 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    # MST : Prim Algorithm
+    position, visited_corners = state
+    corners = problem.corners
 
+    unvisited = [c for c in corners if c not in visited_corners]
+
+    vertices = [position] + unvisited
+
+    if len(vertices) == 1:
+        return 0
+
+    visited = set()
+    visited.add(position)
+
+    total = 0
+
+    while len(visited) < len(vertices):
+
+        min_dist = float('inf')
+        next_point = None
+
+        for p1 in visited:
+            for p2 in vertices:
+                if p2 not in visited:
+                    dist = abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+                    if dist < min_dist:
+                        min_dist = dist
+                        next_point = p2
+
+        total += min_dist
+        visited.add(next_point)
+
+    return total
 
 
 class AStarCornersAgent(SearchAgent):

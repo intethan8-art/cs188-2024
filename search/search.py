@@ -105,18 +105,49 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
                 if suc[0] not in reached :
                     newsuc = (suc[0], parent[1]+[suc[1]])
                     fron.push(newsuc)
-                    reached.append(parent[0])
+                    reached.append(suc[0])
       
 
 def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    reached = []
+    fron = util.Queue()
+    start = problem.getStartState()
+    fron.push((start, []))
+    reached.append(start)
+    while not fron.isEmpty() :
+        parent = fron.pop()
+        if problem.isGoalState(parent[0]) :
+            return parent[1]
+        successors = problem.getSuccessors(parent[0])
+        if successors :
+            for suc in successors :
+                if suc[0] not in reached :
+                    newsuc = (suc[0], parent[1]+[suc[1]])
+                    fron.push(newsuc)
+                    reached.append(suc[0])
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fron = util.PriorityQueue()
+    start = problem.getStartState()
+    fron.push((start, [], 0), 0)
+    cost = {start : 0}
+    while not fron.isEmpty() :
+        parent = fron.pop()
+        if problem.isGoalState(parent[0]) :
+            return parent[1]
+        successors = problem.getSuccessors(parent[0])
+        if successors :
+            for suc in successors :
+                newcost = parent[2]+suc[2]
+                newsuc = (suc[0], parent[1]+[suc[1]], parent[2]+suc[2])
+                if suc[0] not in cost or newcost < cost[suc[0]]:
+                    cost[suc[0]] = newcost
+                    fron.push(newsuc, newsuc[2])
+                    
 
 def nullHeuristic(state, problem=None) -> float:
     """
@@ -128,7 +159,22 @@ def nullHeuristic(state, problem=None) -> float:
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fron = util.PriorityQueue()
+    start = problem.getStartState()
+    fron.push((start, [], 0), 0)
+    cost = {start : 0}
+    while not fron.isEmpty() :
+        parent = fron.pop()
+        if problem.isGoalState(parent[0]) :
+            return parent[1]
+        successors = problem.getSuccessors(parent[0])
+        if successors :
+            for suc in successors :
+                newcost = parent[2] + suc[2]
+                newsuc = (suc[0], parent[1]+[suc[1]], parent[2]+suc[2])
+                if suc[0] not in cost or newcost < cost[suc[0]]:
+                    cost[suc[0]] = newcost
+                    fron.push(newsuc, newsuc[2] + heuristic(newsuc[0], problem))
 
 # Abbreviations
 bfs = breadthFirstSearch
