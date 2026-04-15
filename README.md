@@ -1,37 +1,120 @@
-Project 1 : Search
-    
-    q1 q2 q3 q4
-    DFS BFS UCS A*
-    DFS & BFS are really similar  显式栈（recursion）
-    UCS & A* & Dijkstra
+# CS188 Project 1: Search — Summary
 
-    Dijkstra : Relaxation always fails on edges to visited vertices(visited vertices到source的距离本来就更短，而weight非负，加上当前node到source距离必然更远，故relaxation失效)
-    对应PQ pop出的就是当前visit的节点，它对前面pop出的visited node毫无影响，只用考虑对还在PQ中的进行relaxation
-    
-    q5 
-    为什么可以“随便定义 state”  接口！ search.py算法都是泛型，具体问题由searchAgents.py实现
-    它从来不会做：
-    state[0] 是什么？
-    state.x 是什么？
+## 🔄 Overall Pipeline
 
-    q6
-    heuristic selection
-    Manhattan function ---> MST （最小生成树 Prim算法）
+```
+GameState (full environment)
+   ↓ abstraction
+SearchProblem.state (your design)
+   ↓
+Search (DFS / BFS / UCS / A*)
+   ↓
+action list
+   ↓
+Agent.getAction executes step-by-step
+```
 
-    最小生成树 任一cutting中weight最小crossing edge必在MST中（反证法 树和环 最小）
-    Generic algorithm：（1）找到一个cut，其crossing edges不在 MST中
-                       （2）把weight最小的crossing edge加到MST中
-                       （3）重复直到v-1条边
-    关键：（1）
-    Prim：从任意一个node出发，找最近的node连起来（weight最小的edge），以这样连起来的（在MST中的）为一个set，继续找最近的node
-          优化：类似Dijkstra，避免遍历所有crossing edges   
+---
 
-    kruskal: 关注edge ，将边按weight从小到大排序，总是连weight最小的边除非形成了环。   
-             假设连的是v-->w,所有与v相连的构成一个set，由于不构成环，故v与w本来在不同set，v-->w就是weight最小的cutting edge
-             用一个PQ, 用一个WQU (weighted quick union) disjoint
+## 🔍 Core Algorithms
 
-    q7
-    延续q6 选离得最近的k个有food的node做MST，同时为了避免MST紧密但实际上到最近的node可能很远的情况，补上nearest correction
+### Q1–Q2: DFS & BFS (Unweighted)
 
-    q8
-    greedy 吃离自己最近的 利用继承使代码简洁
+* **DFS** → Stack / recursion
+* **BFS** → Queue
+* Both are **graph search** → must track visited states
+
+---
+
+### Q3–Q4: UCS & A*
+
+* **UCS** = Dijkstra
+* **A*** = UCS + heuristic
+* Use **PriorityQueue (min cost first)**
+
+**Key insight (Dijkstra):**
+
+* Nodes popped from PQ already have the shortest path
+* Relaxation only affects nodes still in PQ (edge weights ≥ 0)
+
+---
+
+## 🧩 Q5: Why state can be “freely defined”
+
+* `search.py` is **generic (interface-based)**
+* It only relies on:
+
+  * `getStartState()`
+  * `getSuccessors(state)`
+  * `isGoalState(state)`
+
+❗ It does NOT care about:
+
+* state structure
+* internal meaning
+
+👉 **State design = problem modeling**
+
+---
+
+## 🔥 Q6: Heuristic Design (A*)
+
+### Baseline
+
+* Manhattan Distance
+
+### Advanced
+
+* **MST (Minimum Spanning Tree)**
+
+  * True path ≥ MST cost → admissible
+
+**Cut Property:**
+
+> The minimum crossing edge of any cut belongs to the MST
+
+### Algorithms
+
+* **Prim** (preferred): grows from a node (similar to Dijkstra)
+* **Kruskal**: sort edges + Union-Find (WQU)
+
+---
+
+## 🚀 Q7: Heuristic Optimization
+
+**Standard high-quality heuristic:**
+
+```
+h(state) =
+    distance to nearest food
+  + MST(remaining food)
+```
+
+* Improves accuracy over pure MST
+* Can optimize with **k-nearest food subset** (reduce cost)
+
+---
+
+## 🍔 Q8: Greedy Strategy
+
+* Always go to the nearest food (BFS each step)
+* Implemented via inheritance (clean code reuse)
+
+⚠️ Not optimal:
+
+> Local optimum ≠ global optimum
+
+---
+
+## ⚠️ Common Pitfalls
+
+* ❌ Confusing `GameState` with `state`
+* ❌ No cost tracking in UCS / A*
+* ❌ Non-admissible heuristic
+* ❌ Running search every step (too slow)
+
+---
+
+## 🎯 Final Takeaway
+
+> **Project 1 = state design + graph search + heuristic design**
